@@ -3,9 +3,9 @@ from sqlalchemy import text
 from sqlalchemy import create_engine
 import pandas as pd
 
-def initialize():
-    engine = create_engine("mysql+mysqlconnector://root:admin@localhost/phonebook").connect()
+engine = create_engine("mysql+mysqlconnector://root:admin@localhost/phonebook").connect()
 
+def initialize():
     init = {'name': [], 'phone_number': [], 'email':[]}
     phonebook_DF = pd.DataFrame(init)
 
