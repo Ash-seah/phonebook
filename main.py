@@ -11,8 +11,7 @@ Base = declarative_base()
 
 class NameNum(Base):
     __tablename__ = "name_num"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    name = Column(String, primary_key=True, index=True)
     phone_number = Column(String, index=True)
     email = Column(String, index=True)
 
@@ -33,28 +32,41 @@ async def root():
 #TODO
 @app.put("/")
 async def add_record(name:str, number:str):
-    engine.execute(text(f'INSERT INTO name_num(name, phone_number) VALUES (\'{name}\', {number})'))
+    session = SessionLocal()
+    try:
+        new_record = NameNum(name=name, phone_number=number)
+        session.add(new_record)
+        session.commit()
+        return {"message": "Record added successfully"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    finally:
+        session.close()
 
 @app.get("/query/name/")
 async def query_name(name:str):
-    res = engine.execute(text(f'SELECT * FROM name_num HAVING LOWER(name) LIKE \'%{name.lower()}%\''))
-    rows = []
-    for row in res.mappings():
-        rows.append(row)
-    return str('\n'.join(str(v) for v in rows))
+    session = SessionLocal()
+    try:
+        res = session.query(NameNum).filter(NameNum.name.ilike(f"%{name}%")).all()
+        return [row.__dict__ for row in res]
+    finally:
+        session.close()
 
 @app.get("/query/number/")
 async def query_number(number:str):
-    res = engine.execute(text(f'SELECT * FROM name_num WHERE phone_number LIKE \'%{number}%\''))
-    rows = []
-    for row in res.mappings():
-        rows.append(row)
-    return str('\n'.join(str(v) for v in rows))
+    session = SessionLocal()
+    try:
+        res = session.query(NameNum).filter(NameNum.phone_number.like(f"%{number}%")).all()
+        return [row.__dict__ for row in res]
+    finally:
+        session.close()
 
 @app.get("/query/email/")
 async def query_number(email:str):
-    res = engine.execute(text(f'SELECT * FROM name_num WHERE email LIKE \'%{email}%\''))
-    rows = []
-    for row in res.mappings():
-        rows.append(row)
-    return str('\n'.join(str(v) for v in rows))
+    session = SessionLocal()
+    try:
+        res = session.query(NameNum).filter(NameNum.email.like(f"%{email}%")).all()
+        return [row.__dict__ for row in res]
+    finally:
+        session.close()
