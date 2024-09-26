@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from sqlalchemy import create_engine, Column, Integer, String, select
@@ -17,6 +18,11 @@ class NameNum(Base):
     phone_number = Column(String, index=True)
     email = Column(String, index=True)
 
+class Record(BaseModel):
+    name: str
+    number: str
+    email: str
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -25,6 +31,7 @@ app = FastAPI()
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(429, _rate_limit_exceeded_handler)
+
 
 @app.get("/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
@@ -38,10 +45,10 @@ async def root(request: Request):
 
 @app.put("/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
-async def add_record(request: Request, name: str, number: str, email: str):
+async def add_record(record: Record, request: Request):
     session = SessionLocal()
     try:
-        new_record = NameNum(name=name, phone_number=number, email=email)
+        new_record = NameNum(name=record.name, phone_number=record.number, email=record.email)
         session.add(new_record)
         session.commit()
         return {"message": "Record added successfully"}
