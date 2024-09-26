@@ -1,6 +1,6 @@
-import fastapi
-import generate_random_data
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
 from sqlalchemy import create_engine, Column, Integer, String, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 engine = create_engine("mysql+mysqlconnector://root:admin@localhost/phonebook").connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
+REQUESTS_PER_MINUTE = 20
 
 class NameNum(Base):
     __tablename__ = "name_num"
@@ -19,8 +21,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# Initialize the limiter
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(429, _rate_limit_exceeded_handler)
+
 @app.get("/")
-async def root():
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def root(request: Request):
     session = SessionLocal()
     try:
         res = session.execute(select(NameNum).order_by(NameNum.name)).scalars().all()
@@ -29,7 +37,8 @@ async def root():
         session.close()
 
 @app.put("/")
-async def add_record(name: str, number: str, email: str):
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def add_record(request: Request, name: str, number: str, email: str):
     session = SessionLocal()
     try:
         new_record = NameNum(name=name, phone_number=number, email=email)
@@ -43,7 +52,8 @@ async def add_record(name: str, number: str, email: str):
         session.close()
 
 @app.get("/query/name/")
-async def query_name(name: str):
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def query_name(request: Request, name: str):
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.name.ilike(f"%{name}%")).order_by(NameNum.name).all()
@@ -52,7 +62,8 @@ async def query_name(name: str):
         session.close()
 
 @app.get("/query/number/")
-async def query_number(number: str):
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def query_number(request: Request, number: str):
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.phone_number.like(f"%{number}%")).order_by(NameNum.name).all()
@@ -61,7 +72,8 @@ async def query_number(number: str):
         session.close()
 
 @app.get("/query/email/")
-async def query_email(email: str):
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def query_email(request: Request, email: str):
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.email.like(f"%{email}%")).order_by(NameNum.name).all()
@@ -70,7 +82,8 @@ async def query_email(email: str):
         session.close()
 
 @app.delete("/delete/")
-async def delete_record(name: str):
+@limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
+async def delete_record(request: Request, name: str):
     session = SessionLocal()
     try:
         record_to_delete = session.query(NameNum).filter(NameNum.name == name).first()
