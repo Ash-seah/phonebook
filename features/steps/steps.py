@@ -43,3 +43,20 @@ def step_when_get_query_name(context, name):
 def step_then_receive_matching_records(context, name):
     assert context.response.status_code == 200
     assert all(name.lower() in record['name'].lower() for record in context.response.json())
+
+@when('I send a DELETE request to "/" with name "{name}"')
+def step_when_delete_record(context, name):
+    context.response = requests.delete(f"{BASE_URL}/delete/", params={'name': name})
+
+@then('the record should be deleted')
+def step_then_record_deleted(context):
+    assert context.response.status_code == 200
+
+@when('I send a GET request to "/query/number/" with number "{number}"')
+def step_when_number_queried(context, number):
+    context.response = requests.get(f"{BASE_URL}/number/", params={'number': number})
+
+@then('I should receive the records matching the number "{number}"')
+def step_then_record_found(context, number):
+    assert context.response.status_code == 200
+    assert all(number in record['phone_number'] for record in context.response.json())

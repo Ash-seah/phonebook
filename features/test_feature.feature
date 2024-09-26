@@ -14,3 +14,13 @@ Feature: FastAPI endpoints testing
     Given the FastAPI server is running
     When I send a GET request to "/query/name/" with name "John"
     Then I should receive the records matching the name "John"
+
+  Scenario: Query by number
+    Given the FastAPI server is running
+    When I send a GET request to "/query/number/" with number "12345"
+    Then I should receive the records matching the number "12345"
+
+  Scenario: Delete a record
+    Given the FastAPI server is running
+    When I send a DELETE request to "/" with name "John"
+    Then the record should be deleted
