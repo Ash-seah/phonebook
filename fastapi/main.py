@@ -36,6 +36,15 @@ app.add_exception_handler(429, _rate_limit_exceeded_handler)
 @app.get("/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def root(request: Request):
+    """
+
+    function in response to an empty query. will return all available data in JSON format.
+
+    :param request: request object
+    :return: JSON format. list of dictionaries
+    :rtype: list
+    """
+
     session = SessionLocal()
     try:
         res = session.execute(select(NameNum).order_by(NameNum.name)).scalars().all()
@@ -46,6 +55,27 @@ async def root(request: Request):
 @app.put("/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def add_record(record: Record, request: Request):
+    """
+        Add a new record to the database.
+
+        This function allows adding a new record with a name, phone number, and email.
+        It commits the new record to the database and returns a success message.
+        If, for some reason, an error occurs, it rolls back the session and raises an HTTPException.
+
+        :param record: The record to be added, containing name, phone number, and email.
+        :type record: Record
+        :param request: The request object.
+        :type request: Request
+        :return: A message indicating the record was added successfully.
+        :rtype: dict
+        :raises HTTPException: If there is an error during the process of adding the record to the database.
+
+        :Example:
+
+        >>> record = Record(name="John Doe", number="1234567890", email="john.doe@example.com")
+        >>> add_record(record, request)
+        {"message": "Record added successfully"}
+        """
     session = SessionLocal()
     try:
         new_record = NameNum(name=record.name, phone_number=record.number, email=record.email)
