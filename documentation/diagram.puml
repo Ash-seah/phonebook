@@ -1,0 +1,15 @@
+@startuml ClassDiagram
+package "Database" {
+}
+package "Fastapi" {
+    class NameNum {
+    }
+    class Record {
+    }
+}
+package "Features" {
+}
+package "Requests" {
+}
+Record --> NameNum
+@enduml
