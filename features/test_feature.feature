@@ -20,6 +20,26 @@ Feature: FastAPI endpoints testing
     When I send a GET request to "/query/number/" with number "12345"
     Then I should receive the records matching the number "12345"
 
+  Scenario: Query by email
+    Given the FastAPI server is running
+    When I send a GET request to "/query/email/" with email "john@gmail.com"
+    Then I should receive the records matching the email "john@gmail.com"
+
+  Scenario: Query by part of a name
+    Given the FastAPI server is running
+    When I send a GET request to "/query/name/" with name "Jo"
+    Then I should receive the records matching the name "Jo"
+
+  Scenario: Query by part of a number
+    Given the FastAPI server is running
+    When I send a GET request to "/query/number/" with number "12"
+    Then I should receive the records matching the number "12"
+
+    Scenario: Query by part of an email
+    Given the FastAPI server is running
+    When I send a GET request to "/query/email/" with email "john@"
+    Then I should receive the records matching the email "john@"
+
   Scenario: Delete a record
     Given the FastAPI server is running
     When I send a DELETE request to "/" with name "John"

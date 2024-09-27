@@ -54,9 +54,22 @@ def step_then_record_deleted(context):
 
 @when('I send a GET request to "/query/number/" with number "{number}"')
 def step_when_number_queried(context, number):
-    context.response = requests.get(f"{BASE_URL}/number/", params={'number': number})
+    context.response = requests.get(f"{BASE_URL}/query/number/", params={'number': number})
 
 @then('I should receive the records matching the number "{number}"')
 def step_then_record_found(context, number):
     assert context.response.status_code == 200
     assert all(number in record['phone_number'] for record in context.response.json())
+
+@when('I send a GET request to "/query/email/" with email "{email}"')
+def step_when_get_query_email(context, email):
+    context.response = requests.get(f"{BASE_URL}/query/email/", params={'email': email})
+
+@then('I should receive the records matching the email "{email}"')
+def step_then_email_found(context, email):
+    assert context.response.status_code == 200
+    assert all(email in record['email'] for record in context.response.json())
+
+@then('I should receive the records containing the name "{name}"')
+def step_then_record_partial_name(context, name):
+    assert context.response.status_code == 200
