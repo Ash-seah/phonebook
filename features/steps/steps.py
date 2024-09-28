@@ -3,6 +3,23 @@ import requests
 
 BASE_URL = "http://localhost:8000"
 
+"""
+This module contains step definitions for testing a FastAPI server using Behave.
+
+The steps include:
+- Checking if the FastAPI server is running.
+- Sending GET, PUT, and DELETE requests to various endpoints.
+- Verifying the responses from the server.
+
+Steps:
+    - @given('the FastAPI server is running'): Ensures the server is running.
+    - @when('I send a GET request to "/"'): Sends a GET request to the root endpoint.
+    - @then('I should receive a list of all records'): Verifies the response contains a list of records.
+    - @when('I send a PUT request to "/" with name "{name}" and number "{number}" and email "{email}"'): Sends a PUT request to add a record.
+    - @then('the record should be added to the database'): Verifies the record is added.
+    - @when('I send a GET request to "/
+"""
+
 @given('the FastAPI server is running')
 def step_given_server_running(context):
     try:

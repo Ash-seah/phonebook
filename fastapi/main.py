@@ -67,8 +67,8 @@ async def add_record(record: Record, request: Request):
         :param request: The request object.
         :type request: Request
         :return: A message indicating the record was added successfully.
-        :rtype: dict
-        :raises HTTPException: If there is an error during the process of adding the record to the database.
+        :rtype: List[Dict[str, Any]]
+        :raises HTTPException: If there is an error during the process of adding the record to the database or if requests limit is reached.
 
         :Example:
 
@@ -91,6 +91,21 @@ async def add_record(record: Record, request: Request):
 @app.get("/query/name/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def query_name(request: Request, name: str):
+    """
+        Query names from the database that match the given name pattern.
+
+        This endpoint allows querying the "name_num" table of the MySQL database for records that match the
+        provided pattern. The results are ordered alphabetically by name.
+
+        :param request: The request object.
+        :type request: Request
+        :param name: The name pattern to search for.
+        :type name: str
+        :return: A list of dictionaries representing the rows that match the query.
+        :rtype: List[Dict[str, Any]]
+        :raises HTTPException: If the request limit is exceeded.
+        """
+
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.name.ilike(f"%{name}%")).order_by(NameNum.name).all()
@@ -101,6 +116,20 @@ async def query_name(request: Request, name: str):
 @app.get("/query/number/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def query_number(request: Request, number: str):
+    """
+    Query the database for entries matching the given phone number.
+
+    This endpoint allows querying the "name_num" table of the MySQL database for records that match the
+    provided phone number pattern. The results are ordered alphabetically by name.
+
+    :param request: The request object.
+    :type request: Request
+    :param number: The phone number to search for.
+    :type number: str
+    :return: A list of dictionaries representing the matching database entries.
+    :rtype: List[Dict[str, Any]]
+    """
+
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.phone_number.like(f"%{number}%")).order_by(NameNum.name).all()
@@ -111,6 +140,19 @@ async def query_number(request: Request, number: str):
 @app.get("/query/email/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def query_email(request: Request, email: str):
+    """
+        Query the database for entries matching the given email address.
+
+        This endpoint allows querying the "name_num" table of the MySQL database for records that match the
+        provided email address pattern. The results are ordered alphabetically by name.
+
+        :param request: The request object.
+        :type request: Request
+        :param email: The email address to search for.
+        :type email: str
+        :return: A list of dictionaries representing the matching database entries.
+        :rtype: List[Dict[str, Any]]
+    """
     session = SessionLocal()
     try:
         res = session.query(NameNum).filter(NameNum.email.like(f"%{email}%")).order_by(NameNum.name).all()
@@ -121,6 +163,21 @@ async def query_email(request: Request, email: str):
 @app.delete("/delete/")
 @limiter.limit(f"{REQUESTS_PER_MINUTE}/minute")
 async def delete_record(request: Request, name: str):
+    """
+        Delete a record from the database by name.
+
+        This endpoint allows deleting the first record from the "name_num" table of the MySQL database that matches the
+        provided name. If the record is found and deleted, a success message is returned. If the record is not found,
+        an HTTP 404 error is raised.
+
+        :param request: The request object.
+        :type request: Request
+        :param name: The name of the record to delete.
+        :type name: str
+        :return: A message indicating the result of the delete operation.
+        :rtype: Dict[str, str]
+        :raises HTTPException: If the record is not found.
+        """
     session = SessionLocal()
     try:
         record_to_delete = session.query(NameNum).filter(NameNum.name == name).first()
