@@ -44,3 +44,9 @@ Feature: FastAPI endpoints testing
     Given the FastAPI server is running
     When I send a DELETE request to "/" with name "John"
     Then the record should be deleted
+
+Feature: Export Contacts
+  Scenario: Export contacts as CSV
+    Given the FastAPI server is running
+    When I send a GET request to "/export-contacts"
+    Then I should receive a CSV file with the contacts

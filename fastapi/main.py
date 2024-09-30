@@ -5,6 +5,10 @@ from slowapi.util import get_remote_address
 from sqlalchemy import create_engine, Column, Integer, String, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import csv
+from fastapi.responses import StreamingResponse
+from io import StringIO
+
 
 engine = create_engine("mysql+mysqlconnector://root:admin@localhost/phonebook").connect()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -72,8 +76,8 @@ async def add_record(record: Record, request: Request):
 
         :Example:
 
-        >>> record = Record(name="John Doe", number="1234567890", email="john.doe@example.com")
-        >>> add_record(record, request)
+        # >>> record = Record(name="John Doe", number="1234567890", email="john.doe@example.com")
+        # >>> add_record(record, request)
         {"message": "Record added successfully"}
         """
     session = SessionLocal()
@@ -189,3 +193,30 @@ async def delete_record(request: Request, name: str):
             raise HTTPException(status_code=404, detail="Record not found")
     finally:
         session.close()
+
+
+@app.get("/export-contacts")
+async def export_contacts():
+    session = SessionLocal()
+    try:
+        contacts = session.query(NameNum).all()
+
+        output = StringIO()
+        writer = csv.writer(output)
+
+        writer.writerow(["Name", "Phone Number", "Email"])
+
+        # Write the data
+        for contact in contacts:
+            writer.writerow([contact.name, contact.phone_number, contact.email])
+
+        # Move the cursor to the beginning of the StringIO object
+        output.seek(0)
+
+        # Create a StreamingResponse to send the CSV file
+        response = StreamingResponse(output, media_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=contacts.csv"
+        return response
+    finally:
+        session.close()
+
