@@ -197,23 +197,28 @@ async def delete_record(request: Request, name: str):
 
 @app.get("/export-contacts")
 async def export_contacts():
+    """
+        Export all contacts from the database as a CSV file.
+
+        This endpoint retrieves all contacts from the database, writes them to a CSV file,
+        and returns the file as a downloadable attachment.
+
+        :return: A response object containing the CSV file with all contacts.
+        :rtype: StreamingResponse
+        """
+
     session = SessionLocal()
     try:
         contacts = session.query(NameNum).all()
-
         output = StringIO()
         writer = csv.writer(output)
-
         writer.writerow(["Name", "Phone Number", "Email"])
 
-        # Write the data
         for contact in contacts:
             writer.writerow([contact.name, contact.phone_number, contact.email])
 
-        # Move the cursor to the beginning of the StringIO object
         output.seek(0)
 
-        # Create a StreamingResponse to send the CSV file
         response = StreamingResponse(output, media_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=contacts.csv"
         return response
