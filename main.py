@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker
 import csv
 from fastapi.responses import StreamingResponse
 from io import StringIO
-from mysql import connector
 
 
 engine = create_engine("mysql+mysqlconnector://root:admin@localhost/phonebook").connect()
