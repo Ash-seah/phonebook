@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.9
+    container_name: phonebook_app
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:password@db/phonebook
+
+  db:
+    image: mysql:8.0
+    container_name: phonebook_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: phonebook
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
