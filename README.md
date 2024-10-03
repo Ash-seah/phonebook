@@ -53,5 +53,12 @@ behave
 
 ## resources:
 https://www.browserstack.com/guide/end-to-end-testing
+https://www.blazemeter.com/blog/cucumber-api-testing
+https://medium.com/@rohit.khankhoje/cucumber-for-api-testing-717d416df53e
 
 ## TODO:
+contact grouping
+pagination
+sorting by things other than alphabetical order
+logging and monitoring
+authentication and authorization
